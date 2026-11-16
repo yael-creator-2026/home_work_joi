@@ -11,13 +11,16 @@ app.use(logGetRequestDate);
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
+app.use('/public', express.static(path.join(__dirname, 'public')));   
 if (process.env.NODE_ENV !== 'production') {
     app.use(morgan('dev'));
 }
 app.use(helmet());
+const { notFound, errorHandler } = require('./middlewares/error.middleware');
+app.use('/api', apiRoutes);
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 דקות
-    max: 100, // מקסימום 100 בקשות לכל IP בפרק זמן זה
+    windowMs: 15 * 60 * 1000, 
+    max: 100, 
     message: { error:' חרגת ממספר הבקשות המותר, נסה שוב später.' }
 });
 app.use(limiter);
@@ -38,7 +41,8 @@ app.use('/api', apiRoutes);
 app.listen(PORT, () => {
   console.log(`השרת רץ בכתובת: http://localhost:${PORT}`);
 });
-
+app.use(notFound);
+app.use(errorHandler);
 
 
 
